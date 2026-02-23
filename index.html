@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delta Models</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: Consolas, monospace;
+            text-align: center;
+            padding: 40px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .model-list {
+            padding: 0;
+            background-color: #05006a;
+            border-radius: 8px;
+            display: inline-block;
+            text-align: left;
+        }
+        .model-list li {
+            list-style: none;
+            padding: 10px 20px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .model-list li:last-child {
+            border-bottom: none;
+        }
+        .model-list li:hover {
+            background-color: #1e293b;
+            cursor: pointer;
+        }
+        .model-list .active {
+            background-color: #2563eb;
+        }
+        
+    </style>
+</head>
+<body>
+    <h1>Delta Models</h1>
+    <ul class="model-list">
+        <li id="Norm">Model Norm</li>
+        <li id="Lite">Model Lite</li>
+        <li id="Em">Model Em</li>
+        <li id="EmLite">Model EmLite</li>
+    </ul>
+    <script  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL = "https://uamazwssxpdzwexvlvzf.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_oYKeoDzCAN2deb-3pbBQZg_wYie4nB6";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const currentModel = await supabase
+    .from('apiSettings')
+    .select('type')
+    .eq('id', 1)
+    .single();
+
+document.getElementById(currentModel.data.type).classList.add('active');
+
+async function setModel(modelName) {
+    document.querySelectorAll('.model-list li').forEach(li => {
+        li.classList.toggle('active', li.id === modelName);
+    });
+    const { error } = await supabase
+        .from('apiSettings')
+        .update({ type: modelName })
+        .eq('id', 1);
+
+    if (error) {
+        console.error("Update failed:", error);
+        alert("Failed to update model.");
+    } else {
+        alert(`Model set to ${modelName}. You can now close this tab.`);
+    }
+}
+
+document.getElementById("Norm").onclick = () => setModel("Norm");
+document.getElementById("Lite").onclick = () => setModel("Lite");
+document.getElementById("Em").onclick = () => setModel("Em");
+document.getElementById("EmLite").onclick = () => setModel("EmLite");
+</script>
+</body>
+</html>
